@@ -64,6 +64,31 @@ describe.only('Bookmark Endpoints', function() {
 
   })
 
-  
-
+  describe.only(`POST /bookmarks`, () => {
+    it(`creates a bookmark, responding with 201 and the new bookmark`, function() {
+      this.retries(3)
+      const newBookmark = {
+        title: 'Reedit',
+        url: 'www.reddit.com',
+        description: 'Test new article content...',
+        rating: 2
+      }
+      return supertest(app)
+        .post('/bookmarks')
+        .send(newBookmark)
+        .expect(201)
+        .expect(res => {
+          expect(res.body.title).to.eql(newBookmark.title)
+          expect(res.body.url).to.eql(newBookmark.url)
+          expect(res.body.rating).to.eql(newBookmark.rating)
+          expect(res.body).to.have.property('id')
+          expect(res.headers.location).to.eql(`/bookmarks/${res.body.id}`)
+        })
+        .then(res =>
+          supertest(app)
+            .get(`/bookmarks/${res.body.id}`)
+            .expect(res.body)
+        )
+    })
+  })
 })

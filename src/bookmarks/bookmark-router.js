@@ -1,10 +1,11 @@
 const express = require('express')
 const bookRouter = express.Router()
-const bodyParser = express.json()
+const jsonParser = express.json()
 const uuid = require('uuid/v4')
 const logger = require('../logger')
 // const { bookmarks } = require('../store')
 const BookmarksService = require('../bookmarks-service')
+
 
 
 bookRouter
@@ -24,38 +25,29 @@ bookRouter
     })
     .catch(next)
   })
-  .post(bodyParser, ( req, res) => {
+  .post(jsonParser, (req, res, next) => {
     const { title, url, description, rating } = req.body
-    if(!title) {
-    logger.error("title required")
-    
-    return  res
-        .status(404)
-        .send("invalid Data")
+    const newBookmark = { title, url, description, rating }
+    for (const [key, value] of Object.entries(newBookmark)) {
+      if (value == null) {
+        return res.status(400).json({
+          error: { message: `Missing '${key}' in request body` }
+        })
+      }
     }
-
-    if(!url) {
-      logger.error('URL required')
-
-      return res
-        .status(404)
-        .send("invalid Data")
-    }
-
-    const id = uuid()
-
-    const bookmark = {
-      id,
-      title,
-      url,
-      description,
-      rating
-    }
-
-    bookmarks.push(bookmark)
-
-    res.json(bookmarks)
+    BookmarksService.insertBookmark(
+      req.app.get('db'),
+      newBookmark
+    )
+      .then(bookmark => {
+        res
+          .status(201)
+          .location(`/bookmarks/${bookmark.id}`)
+          .json(bookmark)
+      })
+      .catch(next)
   })
+
 
   bookRouter
     .route('/bookmarks/:id')
