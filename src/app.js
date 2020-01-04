@@ -29,7 +29,7 @@ app.use(cors())
 // })
 
 
-app.use(bookRouter)
+app.use('/api', bookRouter)
 
 
 
