@@ -38,6 +38,7 @@ bookRouter
   .post(jsonParser, (req, res, next) => {
     const { title, url, description, rating } = req.body
     const newBookmark = { title, url, description, rating }
+    console.log(newBookmark)
     const requiredFields = {title, url, rating }
     for (const [key, value] of Object.entries(requiredFields)) {
       if (value == null) {
@@ -87,7 +88,10 @@ bookRouter
         req.params.id
       )
       .then(numRowsAffected => {
-        res.status(204).end()
+        res
+          .status(204)
+          .json(`${req.params.id}: has been deleted}`)
+          .end()
       })
       .catch(next)
   })
